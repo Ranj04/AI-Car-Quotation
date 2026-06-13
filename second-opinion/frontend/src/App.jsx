@@ -1,4 +1,17 @@
 import { useState } from "react";
+import {
+  ShieldCheck,
+  ScanSearch,
+  Paperclip,
+  AlertTriangle,
+  ArrowRight,
+  Sparkles,
+  HelpCircle,
+  ChevronRight,
+  BadgeCheck,
+  Flag,
+  Wrench,
+} from "lucide-react";
 
 const API_URL = "/api/analyze";
 
@@ -33,9 +46,9 @@ TOTAL .................................. $1260`,
 ];
 
 const BUCKETS = {
-  verified: { emoji: "✓", className: "badge verified", label: "Verified" },
-  flagged: { emoji: "✕", className: "badge flagged", label: "Flagged" },
-  inspection: { emoji: "‼", className: "badge inspection", label: "Inspection" },
+  verified: { Icon: BadgeCheck, className: "verified", label: "Verified" },
+  flagged: { Icon: Flag, className: "flagged", label: "Flagged" },
+  inspection: { Icon: Wrench, className: "inspection", label: "Inspection" },
 };
 
 export default function App() {
@@ -92,19 +105,32 @@ export default function App() {
 
   return (
     <div className="app">
+      <div className="ambient" aria-hidden="true" />
+
       <header className="header">
-        <h1>Second Opinion</h1>
-        <p className="tagline">Don't get fleeced at the repair shop — paste a quote, get the truth.</p>
+        <div className="brand">
+          <span className="brand-mark">
+            <ShieldCheck size={20} strokeWidth={2.2} />
+          </span>
+          <span className="brand-kicker">Repair-Quote Audit</span>
+        </div>
+        <h1 className="title">Second Opinion</h1>
+        <p className="tagline">
+          Paste a repair shop's quote and see what's fair, what's an upsell, and what needs a real
+          mechanic — every price checked against a reference table, never guessed.
+        </p>
       </header>
 
-      <section className="input-card">
+      <section className="panel input-card">
         <div className="samples">
-          <span className="samples-label">Try a sample:</span>
-          {SAMPLES.map((s) => (
-            <button key={s.label} className="sample-btn" onClick={() => loadSample(s)}>
-              {s.label}
-            </button>
-          ))}
+          <span className="samples-label">Try a sample</span>
+          <div className="sample-row">
+            {SAMPLES.map((s) => (
+              <button key={s.label} className="sample-btn" type="button" onClick={() => loadSample(s)}>
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <textarea
@@ -112,69 +138,108 @@ export default function App() {
           placeholder="Paste the repair shop's quote here…"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          rows={10}
+          rows={9}
         />
 
         <div className="actions">
-          <button className="analyze-btn" onClick={analyzeText} disabled={loading || !text.trim()}>
-            {loading ? <><span className="spinner" /> Analyzing…</> : "Analyze"}
+          <button className="analyze-btn" type="button" onClick={analyzeText} disabled={loading || !text.trim()}>
+            {loading ? (
+              <>
+                <span className="spinner" /> Analyzing…
+              </>
+            ) : (
+              <>
+                <ScanSearch size={18} strokeWidth={2.2} /> Analyze quote
+              </>
+            )}
           </button>
           <label className="file-label">
-            📎 Upload a photo or PDF
+            <Paperclip size={16} strokeWidth={2} />
+            Upload photo or PDF
             <input type="file" accept="image/*,application/pdf,.pdf" onChange={onFileChange} disabled={loading} hidden />
           </label>
         </div>
 
-        {error && <div className="error">⚠️ {error}</div>}
+        {error && (
+          <div className="error">
+            <AlertTriangle size={16} strokeWidth={2} />
+            <span>{error}</span>
+          </div>
+        )}
       </section>
 
       {result && (
         <section className="results">
-          <div className="verdict">
+          <div className="panel verdict">
             <div className="verdict-col">
               <span className="verdict-label">Quoted total</span>
               <span className="verdict-quoted">${result.quoted_total}</span>
             </div>
-            <div className="verdict-arrow">vs</div>
+            <span className="verdict-sep">
+              <ArrowRight size={18} strokeWidth={2.4} />
+            </span>
             <div className="verdict-col">
               <span className="verdict-label">Fair total</span>
               <span className="verdict-fair">{result.fair_total_range}</span>
             </div>
           </div>
 
-          {result.summary && <p className="summary">{result.summary}</p>}
+          {result.summary && (
+            <div className="panel summary">
+              <span className="summary-tag">
+                <Sparkles size={14} strokeWidth={2} /> Auditor's note
+              </span>
+              <p>{result.summary}</p>
+            </div>
+          )}
 
           <div className="line-items">
             {result.line_items.map((item, i) => {
               const b = BUCKETS[item.bucket] || BUCKETS.flagged;
+              const Icon = b.Icon;
               return (
-                <div key={i} className={`line-item ${item.bucket}`}>
-                  <div className="li-top">
-                    <span className={b.className}>{b.emoji} {b.label}</span>
-                    <span className="li-desc">{item.description}</span>
-                    <span className="li-price">${item.quoted_price}</span>
+                <article key={i} className={`panel line-item ${item.bucket}`} style={{ "--i": i }}>
+                  <div className="li-icon">
+                    <Icon size={18} strokeWidth={2.2} />
                   </div>
-                  <div className="li-meta">
-                    <span className="li-fair">Fair range: {item.fair_range}</span>
+                  <div className="li-body">
+                    <div className="li-top">
+                      <span className="li-desc">{item.description}</span>
+                      <span className="li-price">${item.quoted_price}</span>
+                    </div>
+                    <div className="li-meta">
+                      <span className={`badge ${b.className}`}>{b.label}</span>
+                      <span className="li-fair">Fair range: {item.fair_range}</span>
+                    </div>
+                    <p className="li-reason">{item.reason}</p>
                   </div>
-                  <p className="li-reason">{item.reason}</p>
-                </div>
+                </article>
               );
             })}
           </div>
 
           {result.questions_for_shop && result.questions_for_shop.length > 0 && (
-            <div className="questions">
-              <h3>Questions to ask the shop</h3>
+            <div className="panel questions">
+              <h3>
+                <HelpCircle size={18} strokeWidth={2.2} /> Questions to ask the shop
+              </h3>
               <ul>
                 {result.questions_for_shop.map((q, i) => (
-                  <li key={i}>{q}</li>
+                  <li key={i}>
+                    <ChevronRight size={15} strokeWidth={2.6} className="q-chev" />
+                    <span>{q}</span>
+                  </li>
                 ))}
               </ul>
             </div>
           )}
         </section>
       )}
+
+      <footer className="footer">
+        Prices are judged against a fixed reference table — Second Opinion flags overcharges and
+        upsells, but it isn't a substitute for a licensed mechanic's inspection.
+      </footer>
     </div>
   );
 }
