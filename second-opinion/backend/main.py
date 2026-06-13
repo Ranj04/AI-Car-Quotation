@@ -138,7 +138,7 @@ def build_contents(req: AnalyzeRequest):
     return [instructions + "QUOTE TO ANALYZE:\n" + (req.text or "")]
 
 
-@app.post("/analyze")
+@app.post("/api/analyze")
 def analyze(req: AnalyzeRequest):
     if not req.text and not req.file_base64 and not req.image_base64:
         raise HTTPException(status_code=400, detail="Provide 'text', or a file via 'file_base64'.")

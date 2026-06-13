@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const API_URL = "http://localhost:8000/analyze";
+const API_URL = "/api/analyze";
 
 const SAMPLES = [
   {
@@ -33,9 +33,9 @@ TOTAL .................................. $1260`,
 ];
 
 const BUCKETS = {
-  verified: { emoji: "✅", className: "badge verified", label: "Verified" },
-  flagged: { emoji: "🚩", className: "badge flagged", label: "Flagged" },
-  inspection: { emoji: "⚠️", className: "badge inspection", label: "Inspection" },
+  verified: { emoji: "✓", className: "badge verified", label: "Verified" },
+  flagged: { emoji: "✕", className: "badge flagged", label: "Flagged" },
+  inspection: { emoji: "‼", className: "badge inspection", label: "Inspection" },
 };
 
 export default function App() {
